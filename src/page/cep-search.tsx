@@ -36,7 +36,7 @@ const CepSearch: React.FC = () => {
       } else {
         setChatMessages((prevMessages: React.ReactNode[]) => [
           ...prevMessages,
-          `Não encontrado ${cep}. Por favor, tente novamente`,
+   
         ]);
       }
 
@@ -45,7 +45,6 @@ const CepSearch: React.FC = () => {
       setError(`Erro ao buscar o CEP ${cep}. Por favor, tente novamente.`);
       setChatMessages((prevMessages: React.ReactNode[]) => [
         ...prevMessages,
-        `Erro ao buscar o CEP ${cep}. Por favor, tente novamente.`,
       ]);
     }
   };
