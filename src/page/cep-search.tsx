@@ -42,7 +42,7 @@ const CepSearch: React.FC = () => {
 
       setError(null);
     } catch (error) {
-      setError(`Erro ao buscar o CEP ${cep}. Por favor, tente novamente.`);
+      setError(`Não encontrado o CEP ${cep}. Por favor, tente novamente.`);
       setChatMessages((prevMessages: React.ReactNode[]) => [
         ...prevMessages,
       ]);
