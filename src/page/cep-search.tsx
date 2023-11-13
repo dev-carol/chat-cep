@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "preact/compat";
 import axios from "axios";
-import "./styles.css";
-
+import { useState } from "preact/hooks";
+import './styles.css'
 interface Address {
   cep: string;
   logradouro: string;
@@ -12,36 +12,38 @@ interface Address {
 
 const CepSearch: React.FC = () => {
   const [cep, setCep] = useState<string>("");
-  const [address, setAddress] = useState<Address | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<React.ReactNode[]>([]);
 
   const handleSearch = async () => {
     try {
       const response = await axios.get<Address>(
-        `https://viacep.com.br/ws/${cep}/json/`
+        `https://viacep.com.br/ws/${cep.replace(/\D/g, '')}/json/`
       );
-      setAddress(response.data);
-      setError(null);
 
       if (isAddressValid(response.data)) {
-        const message = (
-          <div className="avatar-container">
+        const newMessage = (
+          <div className="avatar-container" key={chatMessages.length + 1}>
             <div className="avatar"></div>
             <div>{`Endereço: ${response.data.logradouro}, ${response.data.bairro}, ${response.data.localidade}-${response.data.uf}`}</div>
           </div>
         );
-        setChatMessages([...chatMessages, message]);
-      } else {
-        setChatMessages((prevMessages) => [
+
+        setChatMessages((prevMessages: React.ReactNode[]) => [
           ...prevMessages,
-          `Dados do CEP ${cep} não encontrados. Por favor, tente novamente `,
+          newMessage,
+        ]);
+      } else {
+        setChatMessages((prevMessages: React.ReactNode[]) => [
+          ...prevMessages,
+          `Não encontrado ${cep}. Por favor, tente novamente`,
         ]);
       }
+
+      setError(null);
     } catch (error) {
-      setAddress(null);
-      setError("CEP não encontrado");
-      setChatMessages((prevMessages) => [
+      setError(`Erro ao buscar o CEP ${cep}. Por favor, tente novamente.`);
+      setChatMessages((prevMessages: React.ReactNode[]) => [
         ...prevMessages,
         `Erro ao buscar o CEP ${cep}. Por favor, tente novamente.`,
       ]);
@@ -50,19 +52,12 @@ const CepSearch: React.FC = () => {
 
   const handleClear = () => {
     setCep("");
-    setAddress(null);
     setError(null);
     setChatMessages([]);
   };
 
   const isAddressValid = (address: Address | null): boolean => {
-    return (
-      address &&
-      !!address.logradouro &&
-      !!address.bairro &&
-      !!address.localidade &&
-      !!address.uf
-    );
+    return !!address && !!address.logradouro && !!address.bairro && !!address.localidade && !!address.uf;
   };
 
   return (
@@ -71,9 +66,14 @@ const CepSearch: React.FC = () => {
         <div className="chat-header">Chat CEP</div>
         <div className="chat-window">
           <ul className="message-list">
-            {chatMessages.map((message, index) => (
+            {chatMessages.map((message: React.ReactNode, index: number) => (
               <li key={index}>{message}</li>
             ))}
+            {error && (
+              <li>
+                <div className="error-message">{`Erro: ${error}`}</div>
+              </li>
+            )}
           </ul>
         </div>
         <div className="chat-input">
@@ -82,7 +82,7 @@ const CepSearch: React.FC = () => {
             className="message-input"
             placeholder="Digite o CEP aqui"
             value={cep}
-            onChange={(e) => setCep(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCep(e.currentTarget.value)}
           />
           <button className="send-button" onClick={handleSearch}>
             Buscar
